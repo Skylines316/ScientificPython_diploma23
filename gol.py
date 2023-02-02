@@ -7,6 +7,7 @@ pygame.init()
 # Set up the display
 WIDTH, HEIGHT = 1000,600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+clock = pygame.time.Clock()
 
 # Set up the grid
 GRID_SIZE = 20
@@ -17,7 +18,17 @@ def update_grid(grid):
     new_grid = np.copy(grid)
     for i in range(grid.shape[0]):
         for j in range(grid.shape[1]):
-            count = np.sum(grid[i-1:i+2, j-1:j+2]) - grid[i, j]
+            count = grid[i-1,j-1] + grid[i,j-1] + grid[i-1,j] 
+            if i==grid.shape[0]-1 or j==grid.shape[1]-1:
+                if i==grid.shape[0]-1 and j==grid.shape[1]-1:
+                    count = count + grid[0,j] + grid[0,j-1] + grid[i,0] + grid[i-1,0] + grid[0,0]
+                else:
+                    if i==grid.shape[0]-1:
+                        count = count + grid[0,j] + grid[0,j-1] + grid[0,j+1] + grid[i,j+1] + grid[i-1,j+1]
+                    else:
+                        count = count + grid[i+1,j] + grid[i+1,j-1] + grid[i,0] + grid[i-1,0] + grid[i+1,0]
+            else:
+                count = count + grid[i+1,j] + grid[i+1,j-1] + grid[i,j+1] + grid[i+1,j+1] + grid[i-1,j+1]
             if grid[i, j] == 1:
                 if count < 2 or count > 3:
                     new_grid[i, j] = 0
@@ -30,6 +41,7 @@ def update_grid(grid):
 running = True
 coord=set()
 start=False
+FPS=17
 while running:
     for event in pygame.event.get():
         if (
@@ -43,6 +55,17 @@ while running:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_g:
             start = not start
             # print(start)
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_j:
+            if FPS < 3:
+                FPS = 1
+            else:
+                FPS-=3
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_k:
+            if FPS > 22:
+                FPS = 20
+            else:
+                FPS+=3
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             coordinates = pygame.mouse.get_pos()
             grid[coordinates[0]//20,coordinates[1]//20]=not grid[coordinates[0]//20,coordinates[1]//20]
@@ -66,6 +89,9 @@ while running:
 
     # Update the display
     pygame.display.update()
+    
+    #time
+    clock.tick(FPS)
 
 # Quit Pygame
 pygame.quit()
